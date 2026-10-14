@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Get Me To The Rocket</title>
+<meta name="description" content="Two taps, 30 seconds: help Andrew win a trip to watch Starship launch from Starbase.">
+<meta name="theme-color" content="#05080d">
+<meta property="og:title" content="GET ME TO THE ROCKET">
+<meta property="og:description" content="Two taps, 30 seconds. Every VoxBot install fuels Andrew's trip to watch Starship launch.">
+<style>
+  :root {
+    --bg: #05080d;
+    --panel: #0b121b;
+    --ink: #eef6f1;
+    --dim: #9fb3c2;
+    --green: #36e38a;
+    --amber: #ffc93d;
+    --red: #ff5a4a;
+    --cyan: #5fd4ff;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--ink); }
+  body {
+    font-family: var(--mono);
+    -webkit-text-size-adjust: 100%;
+    background:
+      radial-gradient(120% 60% at 50% 115%, rgba(255,120,40,.18), transparent 60%),
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1px 1px at 85% 45%, rgba(255,255,255,.3), transparent),
+      radial-gradient(1px 1px at 40% 60%, rgba(255,255,255,.25), transparent),
+      var(--bg);
+  }
+  main {
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: clamp(8px, 1.8vh, 18px);
+  }
+
+  /* top bar: playful, not data */
+  .bar { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: .08em; color: var(--dim); }
+  .bar b { color: var(--green); font-weight: 700; }
+  .lights { display: flex; gap: 10px; }
+  .lights span::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-right: 4px; box-shadow: 0 0 6px var(--green); vertical-align: 1px; }
+  .lights span.warn::before { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+
+  h1 {
+    font-family: var(--sans);
+    font-weight: 900;
+    font-size: clamp(38px, min(12.5vw, 7.2vh), 64px);
+    line-height: .92;
+    letter-spacing: -.035em;
+    text-transform: uppercase;
+  }
+  h1 span { display: block; color: var(--amber); }
+
+  .story { font-family: var(--sans); font-size: clamp(15px, 2.1vh, 18px); line-height: 1.35; color: var(--ink); }
+  .story strong { color: var(--amber); }
+
+  /* fuel gauge: the one real number, updated by hand */
+  .fuel { border: 1px solid #1e3a2c; background: var(--panel); padding: 10px 12px; }
+  .fuel-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; letter-spacing: .1em; color: var(--dim); }
+  .fuel-top output { font-size: 20px; font-weight: 800; color: var(--green); letter-spacing: 0; }
+  .fuel-top output small { font-size: 13px; color: var(--dim); font-weight: 600; }
+  .track { margin-top: 8px; height: 10px; background: #13202b; position: relative; overflow: hidden; }
+  .track i { position: absolute; inset: 0 auto 0 0; width: 10%; background: repeating-linear-gradient(90deg, var(--green) 0 8px, #22b86b 8px 10px); box-shadow: 0 0 10px rgba(54,227,138,.6); }
+  .fuel-note { margin-top: 6px; font-size: 11px; color: var(--dim); }
+
+  /* steps */
+  .steps { display: flex; flex-direction: column; gap: clamp(10px, 1.6vh, 14px); }
+  .step {
+    display: flex; align-items: center; gap: 14px;
+    min-height: clamp(76px, 11.5vh, 100px);
+    padding: 12px 14px;
+    border: 2px solid currentColor;
+    color: var(--green);
+    background: linear-gradient(90deg, rgba(54,227,138,.14), rgba(54,227,138,.04));
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .08s ease;
+  }
+  .step:active { transform: scale(.98); }
+  .step:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+  .step.two { color: var(--red); background: linear-gradient(90deg, rgba(255,90,74,.16), rgba(255,90,74,.04)); }
+  .num {
+    flex: none; width: 50px; height: 50px; display: grid; place-items: center;
+    border: 2px solid currentColor; font-size: 28px; font-weight: 800;
+  }
+  .txt { flex: 1; min-width: 0; }
+  .txt b { display: block; color: var(--ink); font-size: clamp(19px, 2.6vh, 23px); font-weight: 800; letter-spacing: .03em; }
+  .txt small { display: block; margin-top: 3px; color: #c5d3dc; font-size: 13px; line-height: 1.3; }
+  .go { flex: none; font-size: 20px; font-weight: 800; }
+  .step.done { color: #4d7a63; background: rgba(54,227,138,.05); }
+  .step.done .num { font-size: 0; }
+  .step.done .num::after { content: "✓"; font-size: 28px; color: var(--green); }
+  .step.next { box-shadow: 0 0 0 0 rgba(255,90,74,.6); animation: pulse 1.4s ease-out infinite; }
+  @keyframes pulse { to { box-shadow: 0 0 0 14px rgba(255,90,74,0); } }
+
+  .what { font-size: 12.5px; line-height: 1.45; color: var(--dim); }
+  .what b { color: var(--cyan); font-weight: 700; }
+  .skip { color: var(--ink); }
+
+  /* finale */
+  .finale { position: fixed; inset: 0; z-index: 10; background: var(--bg); display: none; overflow: hidden; }
+  .finale.on { display: block; }
+  .pad { position: absolute; left: 0; right: 0; bottom: 0; height: 26vh; background: radial-gradient(60% 80% at 50% 100%, rgba(255,140,40,.35), transparent 70%); opacity: 0; }
+  .rocket { position: absolute; left: 50%; bottom: 8vh; width: 64px; margin-left: -32px; }
+  .rocket svg { width: 100%; height: auto; display: block; }
+  .flame { transform-origin: 50% 0; transform: scaleY(0); }
+  .callout { position: absolute; top: 18vh; left: 0; right: 0; text-align: center; font-family: var(--sans); font-weight: 900; font-size: 44px; letter-spacing: -.02em; color: var(--amber); opacity: 0; }
+  .finale.launch .pad { animation: glow .9s ease-in forwards; }
+  .finale.launch .flame { animation: flame .9s ease-out forwards, flicker .08s linear .9s infinite alternate; }
+  .finale.launch .rocket { animation: shake .9s linear, liftoff 1.8s cubic-bezier(.55,0,.9,.4) .9s forwards; }
+  .finale.launch .callout { animation: callout 2.6s ease forwards; }
+  @keyframes glow { to { opacity: 1; } }
+  @keyframes flame { to { transform: scaleY(1); } }
+  @keyframes flicker { from { transform: scaleY(.9); } to { transform: scaleY(1.1); } }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  @keyframes liftoff { to { transform: translateY(-130vh); } }
+  @keyframes callout { 0% { opacity: 0; } 15%,70% { opacity: 1; } 100% { opacity: 0; } }
+
+  .thanks {
+    position: absolute; inset: 0; overflow-y: auto;
+    max-width: 480px; margin: 0 auto;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    display: none; flex-direction: column; gap: 12px;
+  }
+  .finale.done .thanks { display: flex; animation: fadein .5s ease; }
+  .finale.done .rocket, .finale.done .pad, .finale.done .callout { display: none; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(8px); } }
+  .thanks h2 { font-family: var(--sans); font-weight: 900; font-size: clamp(32px, 10vw, 46px); line-height: .95; letter-spacing: -.03em; color: var(--amber); text-transform: uppercase; }
+  .thanks h2:focus { outline: none; }
+  .thanks p { font-family: var(--sans); font-size: 16px; line-height: 1.4; }
+  .must { border-left: 3px solid var(--red); padding: 8px 10px; background: rgba(255,90,74,.08); }
+  .must a, .links a, .links button { color: var(--cyan); }
+  .video { position: relative; aspect-ratio: 16 / 9; background: #000; border: 1px solid #1e3a2c; }
+  .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video span { position: absolute; bottom: 6px; left: 8px; font-size: 10px; color: var(--dim); }
+  .try { font-size: 13px; color: var(--dim); line-height: 1.45; }
+  .try q { color: var(--ink); }
+  .links { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; }
+  .links button { font: inherit; background: none; border: 0; text-decoration: underline; cursor: pointer; padding: 6px 0; }
+  .links a { padding: 6px 0; }
+
+  @media (max-height: 640px) {
+    .fuel-note { display: none; }
+    main { gap: 8px; }
+    .story { font-size: 14px; }
+    .what { font-size: 11.5px; }
+    .num { width: 42px; height: 42px; font-size: 24px; }
+  }
+  @media (max-width: 360px) { .bar > span:first-child { display: none; } .bar { justify-content: flex-end; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="bar" aria-hidden="true">
+    <span><b>andrewOS</b> · MISSION CTRL</span>
+    <span class="lights"><span>VIBES</span><span>SNACKS</span><span class="warn">ANDREW</span></span>
+  </div>
+
+  <h1>Get me to <span>the rocket</span></h1>
+
+  <p class="story">I'm Andrew. I'm in a contest to <strong>watch Starship launch from Starbase, Texas</strong>. Every install of my bot gets me closer. Two taps, 30 seconds.</p>
+
+  <!-- UPDATE BY HAND: change data-installs and the number below as installs come in. -->
+  <div class="fuel" id="fuel" data-installs="5" data-goal="50">
+    <div class="fuel-top">
+      <span>ROCKET FUEL</span>
+      <output id="fuel-count">5 <small>/ 50 installs</small></output>
+    </div>
+    <div class="track" role="img" aria-label="5 of 50 installs so far"><i id="fuel-bar"></i></div>
+    <div class="fuel-note">Counted by hand. Very scientific.</div>
+  </div>
+
+  <nav class="steps" aria-label="Two steps">
+    <a class="step one" id="step1" href="https://x.ai/bot" target="_blank" rel="noopener"
+       aria-label="Step 1: Get the Grok Bot app">
+      <span class="num" aria-hidden="true">1</span>
+      <span class="txt"><b>GET GROK BOT</b><small id="step1-sub">The app VoxBot runs on</small></span>
+      <span class="go" aria-hidden="true">GO →</span>
+    </a>
+    <a class="step two" id="step2" href="https://x.ai/bot/Xm31xkpbR3rr_b_zJauoq" target="_blank" rel="noopener"
+       aria-label="Step 2: Add Andrew's VoxBot template. This is the one that counts.">
+      <span class="num" aria-hidden="true">2</span>
+      <span class="txt"><b>ADD VOXBOT</b><small>My template. This is the one that counts.</small></span>
+      <span class="go" aria-hidden="true">GO →</span>
+    </a>
+  </nav>
+
+  <p class="what"><b>VoxBot</b> makes the phone calls you dread. Try it in practice mode first: no keys, no account setup. <span class="skip">Already have Grok Bot? Skip to 2.</span></p>
+</main>
+
+<div class="finale" id="finale" role="dialog" aria-modal="true" aria-labelledby="thanks-title">
+  <div class="pad"></div>
+  <div class="callout" aria-hidden="true">LIFTOFF</div>
+  <div class="rocket" aria-hidden="true">
+    <svg viewBox="0 0 64 260" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="steel" x1="0" x2="1">
+          <stop offset="0" stop-color="#7d8790"/><stop offset=".35" stop-color="#e7edf1"/>
+          <stop offset=".6" stop-color="#b9c3ca"/><stop offset="1" stop-color="#5f6870"/>
+        </linearGradient>
+        <linearGradient id="fire" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="#ffc93d"/>
+          <stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="M20 22 Q32 -6 44 22 Z" fill="url(#steel)"/>
+      <rect x="20" y="22" width="24" height="170" fill="url(#steel)"/>
+      <path d="M20 34 L12 50 L20 56 Z M44 34 L52 50 L44 56 Z" fill="#4b545b"/>
+      <path d="M20 176 L10 192 L20 192 Z M44 176 L54 192 L44 192 Z" fill="#4b545b"/>
+      <line x1="20" y1="92" x2="44" y2="92" stroke="#5f6870" stroke-width="1"/>
+      <g class="flame"><path d="M22 192 Q32 270 42 192 Z" fill="url(#fire)"/></g>
+    </svg>
+  </div>
+
+  <div class="thanks">
+    <h2 id="thanks-title" tabindex="-1">You're crew. Thank you.</h2>
+    <p>I'm Andrew. VoxBot will make the call you've been dreading. I have a rocket to catch.</p>
+    <p class="must"><strong>Last step:</strong> make sure you finish adding VoxBot in Grok Bot. Only added templates count. <a href="https://x.ai/bot/Xm31xkpbR3rr_b_zJauoq" target="_blank" rel="noopener">Reopen the template</a></p>
+    <div class="video" id="video"><span>This is the rocket I'm trying to see</span></div>
+    <p class="try">First message idea: <q>Help me practice calling my landlord about the broken AC.</q> It plays both sides, then gives you a call report.</p>
+    <div class="links">
+      <button type="button" id="share">Send this to a friend</button>
+      <button type="button" id="close">Back to checklist</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var VIDEO_ID = "rcd_SQZDlnk";
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Fuel gauge width from the hand-updated numbers.
+  var fuel = document.getElementById("fuel");
+  var pct = Math.min(100, 100 * (+fuel.dataset.installs) / (+fuel.dataset.goal));
+  document.getElementById("fuel-bar").style.width = Math.max(pct, 3) + "%";
+
+  // Step 1: swap href per platform. Default (x.ai/bot) still works without JS.
+  var ua = navigator.userAgent || "";
+  var ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var android = /Android/i.test(ua);
+  var s1 = document.getElementById("step1"), s1sub = document.getElementById("step1-sub");
+  if (ios) { s1.href = "https://apps.apple.com/app/id6794501026"; s1sub.textContent = "Opens the App Store"; }
+  else if (android) { s1.href = "https://play.google.com/store/apps/details?id=ai.x.grok.bot"; s1sub.textContent = "Opens Google Play"; }
+
+  var s2 = document.getElementById("step2");
+  function markOne() { s1.classList.add("done"); s2.classList.add("next"); }
+  try { if (sessionStorage.getItem("vox1") === "1") markOne(); } catch (e) {}
+  s1.addEventListener("click", function () {
+    try { sessionStorage.setItem("vox1", "1"); } catch (e) {}
+    markOne();
+  });
+
+  // Step 2: let the link open (new tab / Grok Bot app), and launch the finale here.
+  var finale = document.getElementById("finale");
+  var title = document.getElementById("thanks-title");
+  var video = document.getElementById("video");
+  function showThanks() {
+    finale.classList.add("done");
+    if (!video.querySelector("iframe")) {
+      var f = document.createElement("iframe");
+      f.src = "https://www.youtube-nocookie.com/embed/" + VIDEO_ID +
+        "?playsinline=1&rel=0&mute=1" + (reduce ? "" : "&autoplay=1");
+      f.title = "SpaceX Starship flight video";
+      f.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      f.allowFullscreen = true;
+      video.appendChild(f);
+    }
+    title.focus();
+  }
+  s2.addEventListener("click", function () {
+    s2.classList.remove("next");
+    finale.classList.add("on");
+    if (reduce) { showThanks(); return; }
+    finale.classList.add("launch");
+    setTimeout(showThanks, 2800);
+  });
+
+  document.getElementById("close").addEventListener("click", function () {
+    finale.classList.remove("on", "launch", "done");
+    s2.focus();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && finale.classList.contains("on")) document.getElementById("close").click();
+  });
+
+  var share = document.getElementById("share");
+  share.addEventListener("click", function () {
+    var data = { title: "Get Andrew to the rocket", text: "Two taps, 30 seconds. Help Andrew watch Starship launch.", url: location.href.split("#")[0] };
+    if (navigator.share) { navigator.share(data).catch(function () {}); }
+    else if (navigator.clipboard) { navigator.clipboard.writeText(data.url).then(function () { share.textContent = "Link copied"; }); }
+  });
+})();
+</script>
+</body>
+</html>
