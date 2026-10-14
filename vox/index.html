@@ -5,160 +5,143 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Get Me To The Rocket</title>
 <meta name="description" content="Two taps, 30 seconds: help Andrew win a trip to watch Starship launch from Starbase.">
-<meta name="theme-color" content="#05080d">
-<meta property="og:title" content="GET ME TO THE ROCKET">
+<meta name="theme-color" content="#ff6a1f">
+<meta property="og:title" content="Get me to the rocket.">
 <meta property="og:description" content="Two taps, 30 seconds. Every VoxBot install fuels Andrew's trip to watch Starship launch.">
 <style>
   :root {
-    --bg: #05080d;
-    --panel: #0b121b;
-    --ink: #eef6f1;
-    --dim: #9fb3c2;
-    --green: #36e38a;
-    --amber: #ffc93d;
-    --red: #ff5a4a;
-    --cyan: #5fd4ff;
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --ground: #ff6a1f;
+    --ink: #111;
+    --paper: #fff;
+    --soft: #d8d8d8;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--ink); }
-  body {
-    font-family: var(--mono);
-    -webkit-text-size-adjust: 100%;
-    background:
-      radial-gradient(120% 60% at 50% 115%, rgba(255,120,40,.18), transparent 60%),
-      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.5), transparent),
-      radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,.4), transparent),
-      radial-gradient(1px 1px at 85% 45%, rgba(255,255,255,.3), transparent),
-      radial-gradient(1px 1px at 40% 60%, rgba(255,255,255,.25), transparent),
-      var(--bg);
-  }
+  html, body { height: 100%; background: var(--ground); color: var(--ink); }
+  body { font-family: var(--sans); -webkit-text-size-adjust: 100%; }
+  a { color: var(--ink); }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
   main {
     min-height: 100vh;
     min-height: 100dvh;
-    max-width: 480px;
+    max-width: 440px;
     margin: 0 auto;
-    padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+    padding: max(14px, env(safe-area-inset-top)) 20px max(16px, env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
-    gap: clamp(8px, 1.8vh, 18px);
+    justify-content: space-between;
+    gap: clamp(10px, 2.1vh, 18px);
   }
+  .top { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
 
-  /* top bar: playful, not data */
-  .bar { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: .08em; color: var(--dim); }
-  .bar b { color: var(--green); font-weight: 700; }
-  .lights { display: flex; gap: 10px; }
-  .lights span::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-right: 4px; box-shadow: 0 0 6px var(--green); vertical-align: 1px; }
-  .lights span.warn::before { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
-
+  .hero { position: relative; }
   h1 {
-    font-family: var(--sans);
+    font-size: clamp(42px, min(17vw, 8.4vh), 70px);
+    line-height: .88;
     font-weight: 900;
-    font-size: clamp(38px, min(12.5vw, 7.2vh), 64px);
-    line-height: .92;
-    letter-spacing: -.035em;
-    text-transform: uppercase;
+    letter-spacing: -.045em;
+    max-width: calc(100% - 52px);
   }
-  h1 span { display: block; color: var(--amber); }
+  .rocket-mark { position: absolute; right: 4px; top: -4px; width: 40px; height: 100%; max-height: 200px; }
 
-  .story { font-family: var(--sans); font-size: clamp(15px, 2.1vh, 18px); line-height: 1.35; color: var(--ink); }
-  .story strong { color: var(--amber); }
+  .story { font-size: clamp(15px, 2.2vh, 18px); line-height: 1.32; font-weight: 500; }
 
-  /* fuel gauge: the one real number, updated by hand */
-  .fuel { border: 1px solid #1e3a2c; background: var(--panel); padding: 10px 12px; }
-  .fuel-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; letter-spacing: .1em; color: var(--dim); }
-  .fuel-top output { font-size: 20px; font-weight: 800; color: var(--green); letter-spacing: 0; }
-  .fuel-top output small { font-size: 13px; color: var(--dim); font-weight: 600; }
-  .track { margin-top: 8px; height: 10px; background: #13202b; position: relative; overflow: hidden; }
-  .track i { position: absolute; inset: 0 auto 0 0; width: 10%; background: repeating-linear-gradient(90deg, var(--green) 0 8px, #22b86b 8px 10px); box-shadow: 0 0 10px rgba(54,227,138,.6); }
-  .fuel-note { margin-top: 6px; font-size: 11px; color: var(--dim); }
+  .fuel { display: flex; flex-direction: column; gap: 7px; }
+  .fuel-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; font-weight: 600; }
+  .fuel-top span:first-child { font-weight: 800; }
+  .fuel-top b { font-size: 28px; font-weight: 900; }
+  .cells { display: grid; grid-template-columns: repeat(25, minmax(0, 1fr)); gap: 3px; }
+  .cells i { display: block; height: clamp(10px, 1.7vh, 14px); border-radius: 3px; border: 1.5px solid var(--ink); }
+  .cells i.on { background: var(--ink); }
+  .fuel-note { font-family: var(--mono); font-size: 11px; }
 
-  /* steps */
-  .steps { display: flex; flex-direction: column; gap: clamp(10px, 1.6vh, 14px); }
+  .steps { display: flex; flex-direction: column; gap: 12px; }
   .step {
     display: flex; align-items: center; gap: 14px;
-    min-height: clamp(76px, 11.5vh, 100px);
-    padding: 12px 14px;
-    border: 2px solid currentColor;
-    color: var(--green);
-    background: linear-gradient(90deg, rgba(54,227,138,.14), rgba(54,227,138,.04));
+    min-height: clamp(70px, 10vh, 84px);
+    padding: 0 18px;
+    background: var(--ink); color: var(--paper);
     text-decoration: none;
+    border-radius: 18px;
     -webkit-tap-highlight-color: transparent;
     transition: transform .08s ease;
   }
   .step:active { transform: scale(.98); }
-  .step:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
-  .step.two { color: var(--red); background: linear-gradient(90deg, rgba(255,90,74,.16), rgba(255,90,74,.04)); }
+  .step.two { min-height: clamp(82px, 12vh, 100px); box-shadow: 0 0 0 4px var(--ground), 0 0 0 7px var(--ink); }
   .num {
-    flex: none; width: 50px; height: 50px; display: grid; place-items: center;
-    border: 2px solid currentColor; font-size: 28px; font-weight: 800;
+    flex: none; width: 44px; height: 44px; border-radius: 50%;
+    border: 2px solid var(--paper); display: grid; place-items: center;
+    font-size: 22px; font-weight: 900;
   }
-  .txt { flex: 1; min-width: 0; }
-  .txt b { display: block; color: var(--ink); font-size: clamp(19px, 2.6vh, 23px); font-weight: 800; letter-spacing: .03em; }
-  .txt small { display: block; margin-top: 3px; color: #c5d3dc; font-size: 13px; line-height: 1.3; }
-  .go { flex: none; font-size: 20px; font-weight: 800; }
-  .step.done { color: #4d7a63; background: rgba(54,227,138,.05); }
-  .step.done .num { font-size: 0; }
-  .step.done .num::after { content: "✓"; font-size: 28px; color: var(--green); }
-  .step.next { box-shadow: 0 0 0 0 rgba(255,90,74,.6); animation: pulse 1.4s ease-out infinite; }
-  @keyframes pulse { to { box-shadow: 0 0 0 14px rgba(255,90,74,0); } }
+  .two .num { background: var(--paper); color: var(--ink); }
+  .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .txt b { font-size: clamp(19px, 5.9vw, 23px); font-weight: 900; letter-spacing: -.01em; }
+  .two .txt b { font-size: clamp(21px, 6.6vw, 26px); white-space: nowrap; }
+  .txt small { font-size: 14px; color: var(--soft); }
+  .arrow { flex: none; width: 26px; height: 26px; }
+  .plus { flex: none; padding: 6px 10px; border-radius: 999px; background: var(--ground); color: var(--ink); font-size: 14px; font-weight: 900; }
+  .step.done { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
+  .step.done .num { border-color: var(--ink); font-size: 0; }
+  .step.done .num::after { content: "✓"; font-size: 22px; }
+  .step.done .txt small { color: var(--ink); }
+  .step.done .arrow { stroke: var(--ink); }
+  .step.next { animation: nudge 1.6s ease-in-out infinite; }
+  @keyframes nudge { 0%, 70%, 100% { transform: none; } 80% { transform: translateY(-4px); } 90% { transform: translateY(1px); } }
 
-  .what { font-size: 12.5px; line-height: 1.45; color: var(--dim); }
-  .what b { color: var(--cyan); font-weight: 700; }
-  .skip { color: var(--ink); }
+  .what { font-size: 14px; line-height: 1.4; }
 
   /* finale */
-  .finale { position: fixed; inset: 0; z-index: 10; background: var(--bg); display: none; overflow: hidden; }
+  .finale { position: fixed; inset: 0; z-index: 10; background: var(--ground); display: none; overflow: hidden; }
   .finale.on { display: block; }
   .finale:focus { outline: none; }
-  .pad { position: absolute; left: 0; right: 0; bottom: 0; height: 26vh; background: radial-gradient(60% 80% at 50% 100%, rgba(255,140,40,.35), transparent 70%); opacity: 0; }
-  .rocket { position: absolute; left: 50%; bottom: 8vh; width: 64px; margin-left: -32px; }
-  .rocket svg { width: 100%; height: auto; display: block; }
+  .launchpad { position: absolute; inset: 0; }
+  .callout { position: absolute; top: 16vh; left: 0; right: 0; text-align: center; font-weight: 900; font-size: 64px; letter-spacing: -.045em; opacity: 0; }
+  .ship { position: absolute; left: 50%; bottom: 10vh; width: 56px; margin-left: -28px; }
+  .ship svg { display: block; width: 100%; height: auto; }
   .flame { transform-origin: 50% 0; transform: scaleY(0); }
-  .callout { position: absolute; top: 18vh; left: 0; right: 0; text-align: center; font-family: var(--sans); font-weight: 900; font-size: 44px; letter-spacing: -.02em; color: var(--amber); opacity: 0; }
-  .finale.launch .pad { animation: glow .9s ease-in forwards; }
+  .smoke { position: absolute; left: 50%; bottom: 4vh; width: 260px; height: 90px; margin-left: -130px; border-radius: 50%; background: radial-gradient(closest-side, #fff, rgba(255,255,255,0)); opacity: 0; }
   .finale.launch .flame { animation: flame .9s ease-out forwards, flicker .08s linear .9s infinite alternate; }
-  .finale.launch .rocket { animation: shake .9s linear, liftoff 1.8s cubic-bezier(.55,0,.9,.4) .9s forwards; }
+  .finale.launch .smoke { animation: smoke 2.6s ease-out forwards; }
+  .finale.launch .ship { animation: shake .9s linear, liftoff 1.8s cubic-bezier(.55, 0, .9, .4) .9s forwards; }
   .finale.launch .callout { animation: callout 2.6s ease forwards; }
-  @keyframes glow { to { opacity: 1; } }
   @keyframes flame { to { transform: scaleY(1); } }
   @keyframes flicker { from { transform: scaleY(.9); } to { transform: scaleY(1.1); } }
-  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  @keyframes smoke { 30% { opacity: .9; } 100% { opacity: .6; transform: scale(1.4); } }
+  @keyframes shake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
   @keyframes liftoff { to { transform: translateY(-130vh); } }
-  @keyframes callout { 0% { opacity: 0; } 15%,70% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes callout { 15%, 75% { opacity: 1; } 100% { opacity: 0; } }
 
   .thanks {
     position: absolute; inset: 0; overflow-y: auto;
-    max-width: 480px; margin: 0 auto;
-    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
-    display: none; flex-direction: column; gap: 12px;
+    max-width: 440px; margin: 0 auto;
+    padding: max(14px, env(safe-area-inset-top)) 20px max(16px, env(safe-area-inset-bottom));
+    display: none; flex-direction: column; gap: clamp(10px, 2vh, 16px);
   }
-  .finale.done .thanks { display: flex; animation: fadein .5s ease; }
-  .finale.done .rocket, .finale.done .pad, .finale.done .callout { display: none; }
-  @keyframes fadein { from { opacity: 0; transform: translateY(8px); } }
-  .thanks h2 { font-family: var(--sans); font-weight: 900; font-size: clamp(32px, 10vw, 46px); line-height: .95; letter-spacing: -.03em; color: var(--amber); text-transform: uppercase; }
+  .finale.done .thanks { display: flex; animation: fadein .45s ease; }
+  .finale.done .launchpad { display: none; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(10px); } }
+  .thanks h2 { font-size: clamp(44px, min(16vw, 8vh), 64px); line-height: .88; font-weight: 900; letter-spacing: -.045em; }
   .thanks h2:focus { outline: none; }
-  .thanks p { font-family: var(--sans); font-size: 16px; line-height: 1.4; }
-  .must { border-left: 3px solid var(--red); padding: 8px 10px; background: rgba(255,90,74,.08); }
-  .must a, .links a, .links button { color: var(--cyan); }
-  .video { position: relative; aspect-ratio: 16 / 9; background: #000; border: 1px solid #1e3a2c; }
+  .last { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: var(--ink); color: var(--paper); border-radius: 16px; }
+  .last b { font-size: 17px; font-weight: 900; }
+  .last span { font-size: 15px; line-height: 1.35; }
+  .last a { align-self: flex-start; padding: 10px 14px; border-radius: 999px; background: var(--ground); color: var(--ink); font-size: 15px; font-weight: 900; text-decoration: none; }
+  .last a:focus-visible { outline-color: var(--paper); }
+  .video { position: relative; flex: none; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: var(--ink); }
   .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  .video span { position: absolute; bottom: 6px; left: 8px; font-size: 10px; color: var(--dim); }
-  .try { font-size: 13px; color: var(--dim); line-height: 1.45; }
-  .try q { color: var(--ink); }
-  .links { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; }
-  .links button { font: inherit; background: none; border: 0; text-decoration: underline; cursor: pointer; padding: 6px 0; }
-  .links a { padding: 6px 0; }
+  .try { font-size: 15px; line-height: 1.4; }
+  .actions { display: flex; gap: 10px; margin-top: auto; }
+  .actions button { flex: 1; min-height: 52px; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; }
+  #share { border: 0; background: var(--ink); color: var(--paper); }
+  #close { border: 2px solid var(--ink); background: transparent; color: var(--ink); }
 
-  @media (max-height: 640px) {
-    .fuel-note { display: none; }
-    main { gap: 8px; }
+  @media (max-height: 620px) {
+    .fuel-note, .what .extra { display: none; }
     .story { font-size: 14px; }
-    .what { font-size: 11.5px; }
-    .num { width: 42px; height: 42px; font-size: 24px; }
+    .num { width: 38px; height: 38px; font-size: 19px; }
   }
-  @media (max-width: 360px) { .bar > span:first-child { display: none; } .bar { justify-content: flex-end; } }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
@@ -166,76 +149,73 @@
 </head>
 <body>
 <main>
-  <div class="bar" aria-hidden="true">
-    <span><b>andrewOS</b> · MISSION CTRL</span>
-    <span class="lights"><span>VIBES</span><span>SNACKS</span><span class="warn">ANDREW</span></span>
+  <div class="top" aria-hidden="true"><span>ANDREWOS.COM/VOX</span><span>MISSION 02</span></div>
+
+  <div class="hero">
+    <h1>Get me to the rocket.</h1>
+    <svg class="rocket-mark" aria-hidden="true" viewBox="0 0 40 200" preserveAspectRatio="xMidYMin meet">
+      <path d="M12 26 Q20 0 28 26 Z" fill="#111"/>
+      <rect x="12" y="26" width="16" height="150" fill="#111"/>
+      <path d="M12 36 L5 50 L12 54 Z M28 36 L35 50 L28 54 Z M12 160 L4 176 L12 176 Z M28 160 L36 176 L28 176 Z" fill="#111"/>
+      <path d="M14 178 Q20 200 26 178 Z" fill="#fff"/>
+    </svg>
   </div>
 
-  <h1>Get me to <span>the rocket</span></h1>
+  <p class="story">I'm Andrew. I'm in a contest to watch <b>Starship launch from Starbase, Texas</b>. Every install of my bot gets me closer.</p>
 
-  <p class="story">I'm Andrew. I'm in a contest to <strong>watch Starship launch from Starbase, Texas</strong>. Every install of my bot gets me closer. Two taps, 30 seconds.</p>
-
-  <!-- UPDATE BY HAND: change data-installs and the number below as installs come in. -->
+  <!-- UPDATE BY HAND: change data-installs and the bold number below as installs come in. -->
   <div class="fuel" id="fuel" data-installs="5" data-goal="50">
-    <div class="fuel-top">
-      <span>ROCKET FUEL</span>
-      <output id="fuel-count">5 <small>/ 50 installs</small></output>
-    </div>
-    <div class="track" role="img" aria-label="5 of 50 installs so far"><i id="fuel-bar"></i></div>
-    <div class="fuel-note">Counted by hand. Very scientific.</div>
+    <div class="fuel-top"><span>Rocket fuel</span><span><b>5</b> / 50 installs</span></div>
+    <div class="cells" id="cells" role="img" aria-label="5 of 50 installs so far"></div>
+    <span class="fuel-note">Counted by hand. Very scientific.</span>
   </div>
 
   <nav class="steps" aria-label="Two steps">
     <a class="step one" id="step1" href="https://x.ai/bot" target="_blank" rel="noopener"
        aria-label="Step 1: Get the Grok Bot app">
       <span class="num" aria-hidden="true">1</span>
-      <span class="txt"><b>GET GROK BOT</b><small id="step1-sub">The app VoxBot runs on</small></span>
-      <span class="go" aria-hidden="true">GO →</span>
+      <span class="txt"><b>Get Grok Bot</b><small id="step1-sub">The app VoxBot runs on</small></span>
+      <svg class="arrow" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </a>
     <a class="step two" id="step2" href="https://x.ai/bot/Xm31xkpbR3rr_b_zJauoq" target="_blank" rel="noopener"
        aria-label="Step 2: Add Andrew's VoxBot template. This is the one that counts.">
       <span class="num" aria-hidden="true">2</span>
-      <span class="txt"><b>ADD VOXBOT</b><small>My template. This is the one that counts.</small></span>
-      <span class="go" aria-hidden="true">GO →</span>
+      <span class="txt"><b>Add VoxBot</b><small>The one that counts.</small></span>
+      <span class="plus" aria-hidden="true">+1</span>
     </a>
   </nav>
 
-  <p class="what"><b>VoxBot</b> makes the phone calls you dread. Try it in practice mode first: no keys, no account setup. <span class="skip">Already have Grok Bot? Skip to 2.</span></p>
+  <p class="what"><b>VoxBot makes the phone calls you dread.</b> <span class="extra">Practice mode needs no keys.</span> Have Grok Bot already? Skip to 2.</p>
 </main>
 
 <div class="finale" id="finale" role="dialog" aria-modal="true" aria-labelledby="thanks-title">
-  <div class="pad"></div>
-  <div class="callout" aria-hidden="true">LIFTOFF</div>
-  <div class="rocket" aria-hidden="true">
-    <svg viewBox="0 0 64 260" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="steel" x1="0" x2="1">
-          <stop offset="0" stop-color="#7d8790"/><stop offset=".35" stop-color="#e7edf1"/>
-          <stop offset=".6" stop-color="#b9c3ca"/><stop offset="1" stop-color="#5f6870"/>
-        </linearGradient>
-        <linearGradient id="fire" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="#ffc93d"/>
-          <stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <path d="M20 22 Q32 -6 44 22 Z" fill="url(#steel)"/>
-      <rect x="20" y="22" width="24" height="170" fill="url(#steel)"/>
-      <path d="M20 34 L12 50 L20 56 Z M44 34 L52 50 L44 56 Z" fill="#4b545b"/>
-      <path d="M20 176 L10 192 L20 192 Z M44 176 L54 192 L44 192 Z" fill="#4b545b"/>
-      <line x1="20" y1="92" x2="44" y2="92" stroke="#5f6870" stroke-width="1"/>
-      <g class="flame"><path d="M22 192 Q32 270 42 192 Z" fill="url(#fire)"/></g>
-    </svg>
+  <div class="launchpad" aria-hidden="true">
+    <div class="callout">Liftoff.</div>
+    <div class="smoke"></div>
+    <div class="ship">
+      <svg viewBox="0 0 40 240">
+        <path d="M12 26 Q20 0 28 26 Z" fill="#111"/>
+        <rect x="12" y="26" width="16" height="150" fill="#111"/>
+        <path d="M12 36 L5 50 L12 54 Z M28 36 L35 50 L28 54 Z M12 160 L4 176 L12 176 Z M28 160 L36 176 L28 176 Z" fill="#111"/>
+        <g class="flame"><path d="M13 176 Q20 240 27 176 Z" fill="#fff"/><path d="M16 176 Q20 214 24 176 Z" fill="#ffd23d"/></g>
+      </svg>
+    </div>
   </div>
 
   <div class="thanks">
+    <div class="top" aria-hidden="true"><span>LIFTOFF CONFIRMED</span><span>MISSION 02</span></div>
     <h2 id="thanks-title" tabindex="-1">You're crew. Thank you.</h2>
-    <p>I'm Andrew. VoxBot will make the call you've been dreading. I have a rocket to catch.</p>
-    <p class="must"><strong>Last step:</strong> make sure you finish adding VoxBot in Grok Bot. Only added templates count. <a href="https://x.ai/bot/Xm31xkpbR3rr_b_zJauoq" target="_blank" rel="noopener">Reopen the template</a></p>
-    <div class="video" id="video"><span>This is the rocket I'm trying to see</span></div>
-    <p class="try">First message idea: <q>Help me practice calling my landlord about the broken AC.</q> It plays both sides, then gives you a call report.</p>
-    <div class="links">
-      <button type="button" id="share">Send this to a friend</button>
-      <button type="button" id="close">Back to checklist</button>
+    <p class="story">I'm Andrew. VoxBot will make the call you've been dreading. I have a rocket to catch.</p>
+    <div class="last">
+      <b>One last thing</b>
+      <span>Finish adding VoxBot in Grok Bot. Only added templates count.</span>
+      <a href="https://x.ai/bot/Xm31xkpbR3rr_b_zJauoq" target="_blank" rel="noopener">Reopen the template</a>
+    </div>
+    <div class="video" id="video"></div>
+    <p class="try">First message idea: <b>"Help me practice calling my landlord about the broken AC."</b> It plays both sides, then gives you a call report.</p>
+    <div class="actions">
+      <button type="button" id="share">Send to a friend</button>
+      <button type="button" id="close">Back</button>
     </div>
   </div>
 </div>
@@ -245,10 +225,14 @@
   var VIDEO_ID = "rcd_SQZDlnk";
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Fuel gauge width from the hand-updated numbers.
-  var fuel = document.getElementById("fuel");
-  var pct = Math.min(100, 100 * (+fuel.dataset.installs) / (+fuel.dataset.goal));
-  document.getElementById("fuel-bar").style.width = Math.max(pct, 3) + "%";
+  // Fuel cells from the hand-updated numbers.
+  var fuel = document.getElementById("fuel"), cells = document.getElementById("cells");
+  var have = +fuel.dataset.installs, goal = +fuel.dataset.goal;
+  for (var c = 0; c < goal; c++) {
+    var cell = document.createElement("i");
+    if (c < have) cell.className = "on";
+    cells.appendChild(cell);
+  }
 
   // Step 1: swap href per platform. Default (x.ai/bot) still works without JS.
   var ua = navigator.userAgent || "";
@@ -259,7 +243,7 @@
   else if (android) { s1.href = "https://play.google.com/store/apps/details?id=ai.x.grok.bot"; s1sub.textContent = "Opens Google Play"; }
 
   var s2 = document.getElementById("step2");
-  function markOne() { s1.classList.add("done"); s2.classList.add("next"); }
+  function markOne() { s1.classList.add("done"); s1sub.textContent = "Got it. Now step 2."; s2.classList.add("next"); }
   try { if (sessionStorage.getItem("vox1") === "1") markOne(); } catch (e) {}
   s1.addEventListener("click", function () {
     try { sessionStorage.setItem("vox1", "1"); } catch (e) {}
@@ -270,6 +254,8 @@
   var finale = document.getElementById("finale");
   var title = document.getElementById("thanks-title");
   var video = document.getElementById("video");
+  var main = document.querySelector("main");
+  var timer;
   function showThanks() {
     finale.classList.add("done");
     if (!video.querySelector("iframe")) {
@@ -283,10 +269,9 @@
     }
     title.focus();
   }
+
   // Keep focus inside the finale while it's open: the checklist goes inert,
   // and Tab / Shift+Tab wrap around the finale's own controls.
-  var main = document.querySelector("main");
-  var timer;
   function openFinale() {
     finale.classList.add("on");
     main.inert = true;
