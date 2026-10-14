@@ -111,6 +111,7 @@
   /* finale */
   .finale { position: fixed; inset: 0; z-index: 10; background: var(--bg); display: none; overflow: hidden; }
   .finale.on { display: block; }
+  .finale:focus { outline: none; }
   .pad { position: absolute; left: 0; right: 0; bottom: 0; height: 26vh; background: radial-gradient(60% 80% at 50% 100%, rgba(255,140,40,.35), transparent 70%); opacity: 0; }
   .rocket { position: absolute; left: 50%; bottom: 8vh; width: 64px; margin-left: -32px; }
   .rocket svg { width: 100%; height: auto; display: block; }
@@ -282,20 +283,45 @@
     }
     title.focus();
   }
+  // Keep focus inside the finale while it's open: the checklist goes inert,
+  // and Tab / Shift+Tab wrap around the finale's own controls.
+  var main = document.querySelector("main");
+  var timer;
+  function openFinale() {
+    finale.classList.add("on");
+    main.inert = true;
+    main.setAttribute("aria-hidden", "true");
+  }
+  function closeFinale() {
+    clearTimeout(timer);
+    finale.classList.remove("on", "launch", "done");
+    main.inert = false;
+    main.removeAttribute("aria-hidden");
+    s2.focus();
+  }
   s2.addEventListener("click", function () {
     s2.classList.remove("next");
-    finale.classList.add("on");
+    openFinale();
     if (reduce) { showThanks(); return; }
     finale.classList.add("launch");
-    setTimeout(showThanks, 2800);
+    finale.tabIndex = -1;
+    finale.focus();
+    timer = setTimeout(showThanks, 2800);
   });
 
-  document.getElementById("close").addEventListener("click", function () {
-    finale.classList.remove("on", "launch", "done");
-    s2.focus();
-  });
+  document.getElementById("close").addEventListener("click", closeFinale);
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && finale.classList.contains("on")) document.getElementById("close").click();
+    if (!finale.classList.contains("on")) return;
+    if (e.key === "Escape") { closeFinale(); return; }
+    if (e.key !== "Tab") return;
+    var items = finale.classList.contains("done")
+      ? [title].concat([].slice.call(finale.querySelectorAll(".thanks a[href], .thanks button, .thanks iframe")))
+      : [];
+    e.preventDefault();
+    if (!items.length) return;
+    var i = items.indexOf(document.activeElement);
+    var n = items.length;
+    items[i === -1 ? 0 : (i + (e.shiftKey ? n - 1 : 1)) % n].focus();
   });
 
   var share = document.getElementById("share");
